@@ -46,7 +46,8 @@ Inspiré des design systems de Fluxo et de Bitojel, sombre par défaut, sans bas
 
 - `npm run dev` : l'interface seule dans le navigateur (http://localhost:5173).
 - `npm run dev:electron` : la fenêtre Electron branchée sur `npm run dev`, à lancer dans un second terminal.
-- `npm run build` puis `npm start` : l'application construite.
+- `npm start` : construit puis lance l'application.
+- `npm run package` : l'installateur du système courant, dans `release/`. Publier une release sur GitHub construit et y attache les installateurs macOS (dmg arm64 et x64) et Windows (exe), non signés (`.github/workflows/release.yml`). La release doit s'appeler `v` + la version de `package.json`.
 - `npm run lint`, `npm run typecheck`, `npm test` : vérifications lancées aussi par la CI.
 
 ESLint interdit dans `src/` tout import d'Electron ou de Node, statique ou dynamique : c'est le garde-fou de l'architecture. Le moindre avertissement ESLint fait échouer la CI.
