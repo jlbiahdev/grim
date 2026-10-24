@@ -2,45 +2,44 @@
 
 A dashboard to keep track, at a glance, of every project you build with an AI assistant.
 
-Each GitHub repository holds a small `summary.md` file: status, goals, blockers, next steps, and a link to the AI project or conversation behind it (Claude, ChatGPT, DeepSeek, Grok, Kimi…). GRIM reads these files and lays your projects out as a grid. One click shows a project's details; another reopens its AI conversation so you can pick up right where you left off.
+Each GitHub repository holds a small `summary.md` file: status, goals, blockers, next steps, and a link to the AI project behind it (Claude in this v0; ChatGPT, DeepSeek, Grok, Kimi and others are on the roadmap). GRIM reads these files and lays your projects out as a grid. One click shows a project's details; another reopens its Claude project so you can pick up right where you left off.
 
 ## How it works
 
 1. GRIM reads your GitHub repositories with a read-only personal access token, stored on your device.
 2. For each repository, it reads `summary.md` from the most recently active branch, falling back to the default branch.
 3. Each project appears as a tile, with a status light.
-4. Click a tile to see its goals, blockers and next steps, then open the project in its AI or on GitHub.
+4. Click a tile to see its goals, blockers and next steps, then open the project in Claude or on GitHub.
 
-Repositories without a `summary.md`, and forks, are not shown.
+Only repositories you own are read. Organization and collaborator repositories, forks, and repositories without a `summary.md` are not shown.
 
 ## `summary.md` format
 
-Place it at the root of the repository:
+Place it at the root of the repository. In this v0, section titles and status values are read in French:
 
     ---
-    ai_project: https://claude.ai/project/…
-    status: in progress     # in progress | blocked | paused | done
+    claude_project: https://claude.ai/project/…
+    status: en cours        # en cours | bloqué | en pause | terminé
     ---
 
-    ## Goals
+    ## Attentes
     - …
 
-    ## Blockers
-    - None
+    ## Blocages
+    - Aucun
 
-    ## Next steps
+    ## Prochaines étapes
     - …
 
-- `ai_project`: https link to your AI project or conversation. Optional; without it, the open button is hidden.
-- `status`: one of the four values above. Any other value shows in grey as "unknown status".
+- `claude_project`: https link to the claude.ai project. Optional; without it, the open button is hidden.
+- `status`: one of the four values above (in progress, blocked, paused, done). Any other value shows in grey as "unknown status".
+- The `Attentes`, `Blocages` and `Prochaines étapes` sections hold the goals, blockers and next steps.
 
 ## Keeping summaries up to date automatically
 
 The easiest way is to let the AI maintain the file itself. Add an instruction like this to its custom instructions:
 
-> For every project under git, keep a summary.md at the repository root (ai_project and status header, then Goals, Blockers, Next steps). Update it and commit it to the working branch with every pull request, or when I say we're stopping.
-
-The app's "Help" button gives the full instruction, ready to copy.
+> For every project under git, keep a summary.md at the repository root (claude_project and status header, then the Attentes, Blocages and Prochaines étapes sections). Update it and commit it to the working branch with every pull request, or when I say we're stopping.
 
 ## GitHub token
 
@@ -53,9 +52,9 @@ The token is stored locally by the app and only ever sent to the GitHub API.
 
 ## Download
 
-macOS and Windows installers: coming soon in [Releases](../../releases).
+macOS and Windows installers: coming soon in [Releases](../../releases). Until then, build and run the app from source (see Development).
 
-The installers are not code-signed, so macOS or Windows will show a warning on first launch. On macOS, right-click the app and choose "Open"; on Windows, click "More info" then "Run anyway".
+The installers will not be code-signed, so macOS or Windows will show a warning on first launch.
 
 ## Development
 
@@ -73,6 +72,15 @@ Requires Node.js 22.13 or later.
 
 Electron, React, TypeScript, Vite, Tailwind CSS. The UI is plain web code and Electron is only a thin shell, so the same codebase can later become an installable web app (PWA).
 
+## Roadmap
+
+- **Any AI assistant**: an `ai_project` field accepting a link to any AI project or conversation (Claude, ChatGPT, DeepSeek, Grok, Kimi…), with an "Open in …" button named after the assistant. `claude_project` will keep working.
+- **English summaries**: English section titles (`Goals`, `Blockers`, `Next steps`) and status values (`in progress`, `blocked`, `paused`, `done`), alongside French.
+- **English interface**: the app is in French for now.
+- **Help button**: the full AI instruction, ready to copy.
+- **Installers**: macOS and Windows builds published in Releases.
+- **Web app**: the same codebase as an installable web app (PWA).
+
 ## License
 
-To be decided.
+[MIT](LICENSE). The bundled Jura font is © The Jura Project Authors, licensed under the SIL Open Font License 1.1.

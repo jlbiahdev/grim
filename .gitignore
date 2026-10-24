@@ -1,0 +1,29 @@
+# Dépendances
+node_modules/
+
+# Sorties de build
+dist/
+dist-electron/
+release/
+
+# Journaux
+*.log
+npm-debug.log*
+
+# Variables d'environnement
+.env
+.env.local
+.env.*.local
+
+# Éditeurs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Divers
+*.local
+.vercel
