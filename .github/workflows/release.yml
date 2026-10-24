@@ -1,0 +1,70 @@
+name: Installateurs
+
+# Publier une release sur GitHub (onglet Releases) construit les installateurs
+# macOS et Windows et les attache à cette release.
+# Sur une PR qui touche au packaging, ils sont seulement construits, pour vérifier
+# qu'ils se construisent toujours, et restent téléchargeables dans l'onglet Actions.
+on:
+  release:
+    types: [published]
+  pull_request:
+    paths:
+      - package.json
+      - package-lock.json
+      - build/**
+      - electron/**
+      - .github/workflows/release.yml
+
+concurrency:
+  group: installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Installateur ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Vérifier que la release porte la version de package.json
+        if: github.event_name == 'release'
+        shell: bash
+        # Le nom des installateurs vient de package.json : une release v0.2.0
+        # ne doit pas recevoir des fichiers GRIM-0.1.0.
+        run: test "$TAG" = "v$(node -p "require('./package.json').version")"
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+      - run: npm ci
+      - name: Construire l'installateur
+        run: npm run package
+        env:
+          # Pas de certificat : l'application n'est pas signée (ad hoc sur macOS).
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Garder l'installateur dans l'onglet Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: |
+            release/*.dmg
+            release/*.exe
+          if-no-files-found: error
+      - name: Attacher l'installateur à la release
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          installers=(release/*.dmg release/*.exe)
+          gh release upload "$TAG" "${installers[@]}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}

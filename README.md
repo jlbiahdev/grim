@@ -52,9 +52,28 @@ The token is stored locally by the app and only ever sent to the GitHub API.
 
 ## Download
 
-macOS and Windows installers: coming soon in [Releases](../../releases). Until then, build and run the app from source (see Development).
+Get the installer for your system from [Releases](../../releases):
 
-The installers will not be code-signed, so macOS or Windows will show a warning on first launch.
+- **macOS** (Apple silicon: `GRIM-<version>-arm64.dmg`; Intel: `GRIM-<version>-x64.dmg`)
+- **Windows** (`GRIM-<version>-x64.exe`)
+
+The app is not code-signed, so your system warns you the first time.
+
+### Install on macOS
+
+1. Open the `.dmg` and drag **GRIM** into **Applications**.
+2. Open GRIM. If macOS blocks it, go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**, then confirm.
+3. If macOS says the app "is damaged and can't be opened", run this once in Terminal, then open GRIM again:
+
+       xattr -cr /Applications/GRIM.app
+
+### Install on Windows
+
+1. Run `GRIM-<version>-x64.exe`.
+2. If SmartScreen shows "Windows protected your PC", click **More info**, then **Run anyway**.
+3. Follow the installer. GRIM appears in the Start menu.
+
+The app does not update itself: download the new version from Releases when one comes out.
 
 ## Development
 
@@ -66,7 +85,8 @@ Requires Node.js 22.13 or later.
     npm run lint           # ESLint
     npm test               # tests
     npm run build          # full build
-    npm start              # run the built app
+    npm start              # build, then run the app
+    npm run package        # build the installer for the current system (in release/)
 
 ## Stack
 
@@ -78,7 +98,6 @@ Electron, React, TypeScript, Vite, Tailwind CSS. The UI is plain web code and El
 - **English summaries**: English section titles (`Goals`, `Blockers`, `Next steps`) and status values (`in progress`, `blocked`, `paused`, `done`), alongside French.
 - **English interface**: the app is in French for now.
 - **Help button**: the full AI instruction, ready to copy.
-- **Installers**: macOS and Windows builds published in Releases.
 - **Web app**: the same codebase as an installable web app (PWA).
 
 ## License
