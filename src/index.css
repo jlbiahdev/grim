@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Palette « Minuit & Cobalt » de Fluxo. Écarts volontaires, pour l'accessibilité
+     (contraste AA) : texte secondaire en night-300 au lieu de night-400, texte
+     foncé sur l'accent (comme les boutons de Bitojel) au lieu de blanc. */
+  :root {
+    color-scheme: dark;
+
+    --bg-page: #090e1a;
+    --bg-card: #162038;
+    --bg-card-raised: #1e2d4a;
+
+    --border: #1e2d4a;
+    --border-strong: #2a3d5e;
+    --border-field: #6b8cae;
+
+    --text-primary: #edf2ff;
+    --text-secondary: #a8c0d6;
+    --text-on-accent: #090e1a;
+
+    --accent: #2f80ed;
+    --accent-hover: #63acff;
+    --accent-text: #63acff;
+
+    --danger: #ef4444;
+    --danger-bg: #3d0d0d;
+    --danger-text: #f09595;
+
+    /* Voyants de statut : couleurs sémantiques de Fluxo (cobalt-400 pour « en cours »,
+       night-400 pour « inconnu »), toutes ≥ 3:1 sur les tuiles. */
+    --lamp-active: #63acff;
+    --lamp-blocked: #ef4444;
+    --lamp-paused: #f59e0b;
+    --lamp-done: #22c55e;
+    --lamp-unknown: #6b8cae;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-page font-sans text-ink antialiased;
+  }
+
+  /* Contour de focus net et commun à tous les éléments interactifs (clavier). */
+  :focus-visible {
+    outline: 2px solid var(--accent-hover);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Voyant lumineux, repris du point de statut de Bitojel (sans clignotement). */
+  .lamp {
+    @apply inline-block h-2 w-2 shrink-0 rounded-full;
+    background-color: var(--lamp-color);
+    box-shadow: 0 0 8px var(--lamp-color);
+  }
+  .lamp-active { --lamp-color: var(--lamp-active); }
+  .lamp-blocked { --lamp-color: var(--lamp-blocked); }
+  .lamp-paused { --lamp-color: var(--lamp-paused); }
+  .lamp-done { --lamp-color: var(--lamp-done); }
+  .lamp-unknown { --lamp-color: var(--lamp-unknown); }
+
+  /* Boutons à étiquette espacée, comme dans Bitojel. */
+  .button {
+    @apply inline-flex items-center justify-center rounded-sm px-5 py-2.5 text-xs font-bold uppercase tracking-[0.15em];
+  }
+  .button-primary {
+    @apply button bg-accent text-on-accent hover:bg-accent-hover;
+  }
+  .button-secondary {
+    @apply button border border-line-strong text-ink-soft hover:border-ink-soft hover:text-ink;
+  }
+
+  /* Tuile de projet : liseré d'accent qui se déploie au survol (carte KPI de Bitojel). */
+  .tile {
+    @apply relative flex h-full min-h-[6.5rem] w-full flex-col items-start gap-3 overflow-hidden rounded-md border border-line-strong bg-card p-4 text-left;
+  }
+  .tile::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent;
+  }
+  .tile:hover::before {
+    @apply scale-x-100;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .tile::before {
+      transition: transform 0.3s;
+    }
+  }
+
+  /* Tuile choisie : coins d'accent, repris du logo de Bitojel. */
+  .tile-selected {
+    @apply border-accent bg-raised;
+  }
+  .tile-selected::after {
+    content: '';
+    @apply pointer-events-none absolute inset-1.5 rounded-sm;
+    background:
+      linear-gradient(var(--accent), var(--accent)) top left / 10px 2px no-repeat,
+      linear-gradient(var(--accent), var(--accent)) top left / 2px 10px no-repeat,
+      linear-gradient(var(--accent), var(--accent)) bottom right / 10px 2px no-repeat,
+      linear-gradient(var(--accent), var(--accent)) bottom right / 2px 10px no-repeat;
+  }
+
+  /* Sigle « GRIM » encadré de coins, sur le modèle du logo de Bitojel. */
+  .logo-mark {
+    @apply relative flex h-10 min-w-10 shrink-0 px-2 items-center justify-center border-2 border-accent text-[11px] font-bold tracking-[0.05em] text-accent-text;
+  }
+  .logo-mark::before,
+  .logo-mark::after {
+    content: '';
+    @apply absolute h-2 w-2 border-accent;
+  }
+  .logo-mark::before {
+    @apply -left-1 -top-1 border-l-2 border-t-2;
+  }
+  .logo-mark::after {
+    @apply -bottom-1 -right-1 border-b-2 border-r-2;
+  }
+}
