@@ -9,6 +9,9 @@ import '@fontsource/jura/latin-600.css'
 import '@fontsource/jura/latin-700.css'
 import './index.css'
 import App from './App.tsx'
+import { registerServiceWorker } from './platform/registerServiceWorker.ts'
+
+registerServiceWorker()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

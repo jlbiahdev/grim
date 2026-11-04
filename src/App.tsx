@@ -19,10 +19,15 @@ const browserStore: TokenStore = {
 const STACKED_LAYOUT_QUERY = '(max-width: 1023px)'
 
 const CLEAR_FAILED_NOTICE = 'Le token n’a pas pu être effacé : il est encore enregistré sur cet appareil.'
+const SESSION_ONLY_NOTICE =
+  'Ce navigateur n’autorise pas l’enregistrement du token\u00a0: il est gardé pour cette session seulement et sera redemandé à la prochaine ouverture.'
 
 export default function App() {
   const [token, setToken] = useState<string | null>(() => readToken(browserStore))
   const [tokenNotice, setTokenNotice] = useState<string | null>(null)
+  // Vrai quand le token n'a pas pu être enregistré (navigation privée stricte,
+  // stockage plein) : il ne vit qu'en mémoire, le temps de la session.
+  const [sessionOnly, setSessionOnly] = useState(false)
   const [selectedFullName, setSelectedFullName] = useState<string | null>(null)
   const { loading, result, error, refresh, reset } = useProjects(token)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -53,6 +58,7 @@ export default function App() {
       }
       reset()
       setSelectedFullName(null)
+      setSessionOnly(false)
       setTokenNotice(storedToken ? null : 'Le token a été oublié dans une autre fenêtre.')
       setToken(storedToken)
     }
@@ -72,10 +78,10 @@ export default function App() {
     }
   }
 
+  // Un stockage refusé ne bloque pas l'application : le token reste utilisable
+  // en mémoire, et l'écran principal le signale.
   function handleTokenSubmit(newToken: string): string | null {
-    if (!saveToken(browserStore, newToken)) {
-      return 'Impossible d’enregistrer le token sur cet appareil (stockage plein ou interdit).'
-    }
+    setSessionOnly(!saveToken(browserStore, newToken))
     setTokenNotice(null)
     setSelectedFullName(null)
     setToken(newToken)
@@ -83,7 +89,10 @@ export default function App() {
   }
 
   function forgetToken(reason: string | null) {
-    const cleared = clearToken(browserStore)
+    // En mémoire seulement, rien n'a été enregistré : un échec d'effacement
+    // ne laisse aucun token sur l'appareil.
+    const cleared = clearToken(browserStore) || sessionOnly
+    setSessionOnly(false)
     const notices = [reason, cleared ? null : CLEAR_FAILED_NOTICE].filter((notice) => notice !== null)
     setTokenNotice(notices.length > 0 ? notices.join(' ') : null)
     reset()
@@ -138,6 +147,12 @@ export default function App() {
       </header>
 
       <main>
+        {sessionOnly && (
+          <p role="status" className="mt-6 text-sm text-ink-soft">
+            {SESSION_ONLY_NOTICE}
+          </p>
+        )}
+
         {errorDescription && (
           <div role="alert" className="mt-6 rounded-md border border-danger bg-danger-bg p-4 text-danger-text">
             <p>{errorDescription.message}</p>

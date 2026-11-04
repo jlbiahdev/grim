@@ -50,7 +50,15 @@ Create a *fine-grained* token on GitHub (Settings → Developer settings → Per
 
 The token is stored locally by the app and only ever sent to the GitHub API.
 
-## Download
+## Web app (PWA)
+
+GRIM also runs in the browser, on desktop and mobile. Open it, then use your browser's **Install** or **Add to Home Screen** option to get an app icon.
+
+- The app itself starts offline; reading your projects needs a connection.
+- Responses from GitHub are never cached.
+- If the browser refuses to store the token (strict private browsing, full storage), GRIM keeps it in memory for the session and says so.
+
+## Desktop apps
 
 Get the installer for your system from [Releases](../../releases):
 
@@ -84,13 +92,14 @@ Requires Node.js 22.13 or later.
     npm run dev:electron   # Electron window (in a second terminal, with npm run dev running)
     npm run lint           # ESLint
     npm test               # tests
-    npm run build          # full build
+    npm run build          # full build (web app + desktop shell)
+    npm run build:web      # web app only, in dist/ (what Vercel deploys)
     npm start              # build, then run the app
     npm run package        # build the installer for the current system (in release/)
 
 ## Stack
 
-Electron, React, TypeScript, Vite, Tailwind CSS. The UI is plain web code and Electron is only a thin shell, so the same codebase can later become an installable web app (PWA).
+Electron, React, TypeScript, Vite, Tailwind CSS. The UI is plain web code: the same codebase runs as a desktop app (Electron is only a thin shell) and as an installable web app (PWA, deployed on Vercel).
 
 ## Roadmap
 
@@ -98,7 +107,6 @@ Electron, React, TypeScript, Vite, Tailwind CSS. The UI is plain web code and El
 - **English summaries**: English section titles (`Goals`, `Blockers`, `Next steps`) and status values (`in progress`, `blocked`, `paused`, `done`), alongside French.
 - **English interface**: the app is in French for now.
 - **Help button**: the full AI instruction, ready to copy.
-- **Web app**: the same codebase as an installable web app (PWA).
 
 ## License
 

@@ -10,18 +10,19 @@ Le dépôt est **public** : rien de personnel ni de confidentiel dans le code, l
 
 Feuille de route :
 1. **v0 Electron** : application de bureau.
-2. **PWA**, une fois la v0 validée, à partir de la même base de code.
+2. **PWA**, à partir de la même base de code, déployée sur Vercel.
 
-## Architecture (pensée pour la PWA)
+## Architecture (une base, deux cibles)
 
-- `src/` : l'interface et **toute** la logique (lecture GitHub, lecture de `summary.md`, choix de la branche). Code web pur : aucun import de Node ni d'Electron. C'est ce dossier qui deviendra la PWA.
+- `src/` : l'interface et **toute** la logique (lecture GitHub, lecture de `summary.md`, choix de la branche). Code web pur : aucun import de Node ni d'Electron. Ce même dossier est servi tel quel comme PWA.
   - `src/summary/` et `src/github/` : lecture de `summary.md` et de GitHub, sans React.
   - `src/token/` : stockage du token (`localStorage`, identique dans Electron et dans la PWA).
   - `src/ui/` : logique d'interface testable sans navigateur (messages d'erreur, statuts, garde contre les réponses périmées) et le hook `useProjects`.
   - `src/components/` : composants React (formulaire du token, grille, détail).
 - `electron/` : coque mince. Elle ouvre la fenêtre, envoie les liens https vers le navigateur du système et bloque toute autre navigation. Rien de métier ici.
 - Les appels à GitHub partent de l'interface (`fetch` vers `api.github.com`, autorisé par CORS), pour fonctionner à l'identique dans Electron et dans un navigateur.
-- Si un besoin diffère entre Electron et la PWA (par exemple le stockage du token), l'isoler derrière une petite interface dans `src/platform/`, au moment où le besoin apparaît, pas avant.
+- `src/platform/` : ce qui diffère entre Electron et la PWA, isolé au moment où le besoin apparaît, pas avant. Aujourd'hui, le service worker, enregistré seulement en https (pas dans Electron, en `file://`).
+- PWA : `vite-plugin-pwa`, configuré comme NSILI dans `vite.config.ts`. Le service worker ne met en cache que l'application, jamais les réponses de GitHub (données privées). Si le token ne peut pas être enregistré, il est gardé en mémoire pour la session et l'écran le signale.
 - La politique de sécurité du contenu (CSP) est ajoutée au build dans `vite.config.ts` ; toute nouvelle origine externe doit y être déclarée.
 
 ## Design
@@ -46,11 +47,18 @@ Inspiré des design systems de Fluxo et de Bitojel, sombre par défaut, sans bas
 
 - `npm run dev` : l'interface seule dans le navigateur (http://localhost:5173).
 - `npm run dev:electron` : la fenêtre Electron branchée sur `npm run dev`, à lancer dans un second terminal.
-- `npm start` : construit puis lance l'application.
+- `npm run build:web` : la PWA seule, dans `dist/` (c'est ce que Vercel construit).
+- `npm start` : construit puis lance l'application de bureau.
 - `npm run package` : l'installateur du système courant, dans `release/`. Publier une release sur GitHub construit et y attache les installateurs macOS (dmg arm64 et x64) et Windows (exe), non signés (`.github/workflows/release.yml`). La release doit s'appeler `v` + la version de `package.json`.
 - `npm run lint`, `npm run typecheck`, `npm test` : vérifications lancées aussi par la CI.
 
 ESLint interdit dans `src/` tout import d'Electron ou de Node, statique ou dynamique : c'est le garde-fou de l'architecture. Le moindre avertissement ESLint fait échouer la CI.
+
+## Déploiement
+
+- **Vercel** : projet `grim` (équipe Cyrano Conseil), relié au dépôt comme NSILI. Chaque merge sur `main` déploie la production ; chaque PR a son déploiement de prévisualisation.
+- `vercel.json` : installation sans le binaire d'Electron, `npm run build:web`, sortie `dist/`, en-têtes de sécurité.
+- Aucune variable d'environnement : l'application n'a pas de serveur.
 
 ## Avant d'ouvrir une PR
 
