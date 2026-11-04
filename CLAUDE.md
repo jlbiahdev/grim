@@ -56,7 +56,7 @@ ESLint interdit dans `src/` tout import d'Electron ou de Node, statique ou dynam
 
 ## Déploiement
 
-- **Vercel** : projet `grim`, relié au dépôt (à créer dès que Vercel a accès au dépôt). Chaque merge sur `main` déploiera la production ; chaque PR aura son déploiement de prévisualisation.
+- **Vercel** : projet `grim`, relié au dépôt, branche de production `main`. Chaque merge sur `main` déploie la production ; chaque push sur une autre branche a son déploiement de prévisualisation, réservé aux membres de l'équipe Vercel. La production est publique.
 - `vercel.json` : installation sans le binaire d'Electron, `npm run build:web`, sortie `dist/`, en-têtes de sécurité.
 - Aucune variable d'environnement : l'application n'a pas de serveur.
 
