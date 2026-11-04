@@ -1,5 +1,5 @@
 // Accès en lecture à l'API REST de GitHub. Les appels partent de l'interface :
-// le même code tourne dans Electron et dans un navigateur (future PWA).
+// le même code tourne dans Electron et dans la PWA.
 
 const API_ORIGIN = 'https://api.github.com'
 const API_VERSION = '2022-11-28'
@@ -101,6 +101,10 @@ export class GitHubClient {
     let response: Response
     try {
       response = await this.fetchFunction(url, {
+        // Les réponses contiennent des données privées (summary.md de dépôts
+        // privés) : le navigateur ne doit pas les garder dans son cache disque,
+        // où elles survivraient à « Oublier le token » sur un appareil partagé.
+        cache: 'no-store',
         headers: {
           Accept: accept,
           Authorization: `Bearer ${this.token}`,

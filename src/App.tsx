@@ -3,8 +3,9 @@ import { ProjectDetail } from './components/ProjectDetail.tsx'
 import { Logo } from './components/Logo.tsx'
 import { ProjectGrid } from './components/ProjectGrid.tsx'
 import { TokenForm } from './components/TokenForm.tsx'
-import { TOKEN_STORAGE_KEY, clearToken, readToken, saveToken, type TokenStore } from './token/tokenStorage.ts'
+import { TOKEN_STORAGE_KEY, readToken, type TokenStore } from './token/tokenStorage.ts'
 import { describeLoadError } from './ui/errorMessage.ts'
+import { SESSION_ONLY_NOTICE, forgetToken as forgetStoredToken, rememberToken } from './ui/tokenSession.ts'
 import { useProjects } from './ui/useProjects.ts'
 
 // Accès paresseux : lire window.localStorage peut lever (stockage interdit) ;
@@ -18,11 +19,13 @@ const browserStore: TokenStore = {
 // En dessous de la largeur « lg » de Tailwind, le détail passe sous la grille.
 const STACKED_LAYOUT_QUERY = '(max-width: 1023px)'
 
-const CLEAR_FAILED_NOTICE = 'Le token n’a pas pu être effacé : il est encore enregistré sur cet appareil.'
 
 export default function App() {
   const [token, setToken] = useState<string | null>(() => readToken(browserStore))
   const [tokenNotice, setTokenNotice] = useState<string | null>(null)
+  // Vrai quand le token n'a pas pu être enregistré (navigation privée stricte,
+  // stockage plein) : il ne vit qu'en mémoire, le temps de la session.
+  const [sessionOnly, setSessionOnly] = useState(false)
   const [selectedFullName, setSelectedFullName] = useState<string | null>(null)
   const { loading, result, error, refresh, reset } = useProjects(token)
   const headingRef = useRef<HTMLHeadingElement>(null)
@@ -39,7 +42,7 @@ export default function App() {
     }
   }, [token])
 
-  // Token saisi ou effacé dans un autre onglet (future PWA) : on s'aligne. Si le
+  // Token saisi ou effacé dans un autre onglet : on s'aligne. Si le
   // token lu est le même (réécrit à l'identique), rien ne change : remettre
   // l'état à zéro sans relancer de chargement bloquerait l'écran en lecture.
   useEffect(() => {
@@ -49,10 +52,16 @@ export default function App() {
       }
       const storedToken = readToken(browserStore)
       if (storedToken === tokenRef.current) {
+        // Le même token vient d'être enregistré ailleurs : il n'est plus
+        // seulement en mémoire.
+        if (storedToken) {
+          setSessionOnly(false)
+        }
         return
       }
       reset()
       setSelectedFullName(null)
+      setSessionOnly(false)
       setTokenNotice(storedToken ? null : 'Le token a été oublié dans une autre fenêtre.')
       setToken(storedToken)
     }
@@ -72,10 +81,9 @@ export default function App() {
     }
   }
 
+  // Ne renvoie jamais d'erreur : un stockage refusé ne bloque pas (voir tokenSession).
   function handleTokenSubmit(newToken: string): string | null {
-    if (!saveToken(browserStore, newToken)) {
-      return 'Impossible d’enregistrer le token sur cet appareil (stockage plein ou interdit).'
-    }
+    setSessionOnly(rememberToken(browserStore, newToken).sessionOnly)
     setTokenNotice(null)
     setSelectedFullName(null)
     setToken(newToken)
@@ -83,9 +91,8 @@ export default function App() {
   }
 
   function forgetToken(reason: string | null) {
-    const cleared = clearToken(browserStore)
-    const notices = [reason, cleared ? null : CLEAR_FAILED_NOTICE].filter((notice) => notice !== null)
-    setTokenNotice(notices.length > 0 ? notices.join(' ') : null)
+    setTokenNotice(forgetStoredToken(browserStore, reason))
+    setSessionOnly(false)
     reset()
     setSelectedFullName(null)
     setToken(null)
@@ -138,6 +145,12 @@ export default function App() {
       </header>
 
       <main>
+        {sessionOnly && (
+          <p role="status" className="mt-6 text-sm text-ink-soft">
+            {SESSION_ONLY_NOTICE}
+          </p>
+        )}
+
         {errorDescription && (
           <div role="alert" className="mt-6 rounded-md border border-danger bg-danger-bg p-4 text-danger-text">
             <p>{errorDescription.message}</p>

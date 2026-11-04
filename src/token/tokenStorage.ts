@@ -1,5 +1,5 @@
 // Le token GitHub est gardé dans localStorage, de la même façon dans Electron et
-// dans la future PWA (décision du projet : token fine-grained en lecture seule).
+// dans la PWA (décision du projet : token fine-grained en lecture seule).
 // Le nom de la clé est fixe : il ne contient jamais le token lui-même.
 export const TOKEN_STORAGE_KEY = 'grim.github-token'
 
