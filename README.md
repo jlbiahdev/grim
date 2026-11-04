@@ -55,7 +55,9 @@ The token is stored locally by the app and only ever sent to the GitHub API.
 GRIM also runs in the browser, on desktop and mobile. Open it, then use your browser's **Install** or **Add to Home Screen** option to get an app icon.
 
 - The app itself starts offline; reading your projects needs a connection.
-- Responses from GitHub are never cached.
+- Responses from GitHub are never cached, neither by the app nor by the browser.
+- A new version installs in the background and applies the next time you open the app.
+- On iPhone and iPad, the installed app does not share Safari's storage: enter the token again in the installed app.
 - If the browser refuses to store the token (strict private browsing, full storage), GRIM keeps it in memory for the session and says so.
 
 ## Desktop apps

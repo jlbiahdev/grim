@@ -33,15 +33,14 @@ export default defineConfig({
   plugins: [
     react(),
     contentSecurityPolicy(),
-    // Configuration reprise de NSILI. Le service worker ne met en cache que
-    // l'application elle-même (lancement hors connexion) ; les réponses de
-    // GitHub ne sont jamais mises en cache : elles contiennent des données privées.
+    // Le service worker ne met en cache que l'application elle-même (lancement
+    // hors connexion). Aucune règle de cache à l'exécution : les réponses de
+    // GitHub, qui contiennent des données privées, n'y passent jamais.
     VitePWA({
       // Enregistrement fait à la main dans main.tsx, seulement en https :
       // un service worker ne peut pas tourner dans Electron (file://).
       injectRegister: false,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'GRIM — GitHub Repo AI Monitor',
         short_name: 'GRIM',
@@ -62,6 +61,10 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
         skipWaiting: true,
         clientsClaim: true,
+        // L'application tient en une page : pas de repli de navigation. Servir
+        // index.html pour /foo/bar casserait ses chemins relatifs (page blanche) ;
+        // sans repli, Vercel renvoie un 404 propre.
+        navigateFallback: null,
       },
     }),
   ],

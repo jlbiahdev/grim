@@ -12,6 +12,13 @@ test('envoie le token et la version d’API à GitHub', async () => {
   assert.equal(headers['X-GitHub-Api-Version'], '2022-11-28')
 })
 
+test('demande au navigateur de ne pas garder les réponses en cache', async () => {
+  const github = fakeGitHub({ [REPOS_URL]: { json: [] } })
+  await new GitHubClient('secret', github.fetch).listOwnedRepositories()
+
+  assert.equal(github.requests[0].init.cache, 'no-store')
+})
+
 test('liste les dépôts possédés', async () => {
   const github = fakeGitHub({ [REPOS_URL]: { json: [repository('alpha', 'develop')] } })
   const repositories = await new GitHubClient('t', github.fetch).listOwnedRepositories()

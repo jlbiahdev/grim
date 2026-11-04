@@ -14,7 +14,7 @@ Feuille de route :
 
 ## Architecture (une base, deux cibles)
 
-- `src/` : l'interface et **toute** la logique (lecture GitHub, lecture de `summary.md`, choix de la branche). Code web pur : aucun import de Node ni d'Electron. Ce même dossier est servi tel quel comme PWA.
+- `src/` : l'interface et **toute** la logique (lecture GitHub, lecture de `summary.md`, choix de la branche). Code web pur : aucun import de Node ni d'Electron. Le même dossier, construit par Vite, est la PWA.
   - `src/summary/` et `src/github/` : lecture de `summary.md` et de GitHub, sans React.
   - `src/token/` : stockage du token (`localStorage`, identique dans Electron et dans la PWA).
   - `src/ui/` : logique d'interface testable sans navigateur (messages d'erreur, statuts, garde contre les réponses périmées) et le hook `useProjects`.
@@ -22,7 +22,7 @@ Feuille de route :
 - `electron/` : coque mince. Elle ouvre la fenêtre, envoie les liens https vers le navigateur du système et bloque toute autre navigation. Rien de métier ici.
 - Les appels à GitHub partent de l'interface (`fetch` vers `api.github.com`, autorisé par CORS), pour fonctionner à l'identique dans Electron et dans un navigateur.
 - `src/platform/` : ce qui diffère entre Electron et la PWA, isolé au moment où le besoin apparaît, pas avant. Aujourd'hui, le service worker, enregistré seulement en https (pas dans Electron, en `file://`).
-- PWA : `vite-plugin-pwa`, configuré comme NSILI dans `vite.config.ts`. Le service worker ne met en cache que l'application, jamais les réponses de GitHub (données privées). Si le token ne peut pas être enregistré, il est gardé en mémoire pour la session et l'écran le signale.
+- PWA : `vite-plugin-pwa` dans `vite.config.ts`. Le service worker ne met en cache que l'application, jamais les réponses de GitHub (données privées, demandées aussi en `cache: 'no-store'`). Une nouvelle version s'applique à la prochaine ouverture, sans rechargement forcé. Si le token ne peut pas être enregistré, il est gardé en mémoire pour la session et l'écran le signale (`src/ui/tokenSession.ts`).
 - La politique de sécurité du contenu (CSP) est ajoutée au build dans `vite.config.ts` ; toute nouvelle origine externe doit y être déclarée.
 
 ## Design
@@ -56,7 +56,7 @@ ESLint interdit dans `src/` tout import d'Electron ou de Node, statique ou dynam
 
 ## Déploiement
 
-- **Vercel** : projet `grim` (équipe Cyrano Conseil), relié au dépôt comme NSILI. Chaque merge sur `main` déploie la production ; chaque PR a son déploiement de prévisualisation.
+- **Vercel** : projet `grim`, relié au dépôt (à créer dès que Vercel a accès au dépôt). Chaque merge sur `main` déploiera la production ; chaque PR aura son déploiement de prévisualisation.
 - `vercel.json` : installation sans le binaire d'Electron, `npm run build:web`, sortie `dist/`, en-têtes de sécurité.
 - Aucune variable d'environnement : l'application n'a pas de serveur.
 
